@@ -1,13 +1,17 @@
-package com.ideal.test.ideal
+package com.ideal.test.ideal.activity
 
 import android.annotation.TargetApi
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
 import com.amap.api.location.AMapLocation
 import com.amap.api.location.AMapLocationClient
+import com.amap.api.location.AMapLocationClientOption
 import com.amap.api.location.AMapLocationListener
+import com.ideal.test.ideal.MyApplication
+import com.ideal.test.ideal.R
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -27,17 +31,29 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
 
         button_locate.setOnClickListener { _ ->
-            if (! permissionsGranted) return@setOnClickListener
+            if (!permissionsGranted) return@setOnClickListener
             val mAMapLocationListener = AMapLocationListener { location ->
                 if (location.errorCode == 0) {
                     aMapLocation = location
-                    Toast.makeText(this, location.toString(), Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "${location.country} ${location.province} ${location.city}", Toast.LENGTH_LONG).show()
                     locationClient?.stopLocation()
+                    locationClient?.onDestroy()
                 }
             }
+            val option = AMapLocationClientOption()
+            // 获取最近3s内精度最高的一次定位结果：
+            option.isOnceLocationLatest = true
+
             locationClient = AMapLocationClient(applicationContext)
+            locationClient?.setLocationOption(option)
             locationClient?.setLocationListener(mAMapLocationListener)
+            locationClient?.stopLocation()
             locationClient?.startLocation()
+        }
+
+        button_show_map.setOnClickListener { _ ->
+            val intent = Intent(this, AmapActivity::class.java)
+            startActivity(intent)
         }
     }
 
